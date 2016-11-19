@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.company.MainVerticleTest" tests="2" skipped="0" failures="2" errors="0" timestamp="2016-11-19T07:28:16" hostname="localhost.localdomain" time="240.554">
+  <properties/>
+  <testcase name="basicInsertTest" classname="com.company.MainVerticleTest" time="120.522">
+    <failure message="java.util.concurrent.TimeoutException" type="java.util.concurrent.TimeoutException">java.util.concurrent.TimeoutException
+	at io.vertx.ext.unit.impl.TestContextImpl$Step.lambda$run$0(TestContextImpl.java:112)
+	at java.lang.Thread.run(Thread.java:745)
+</failure>
+  </testcase>
+  <testcase name="missingParametersTest" classname="com.company.MainVerticleTest" time="120.032">
+    <failure message="java.util.concurrent.TimeoutException" type="java.util.concurrent.TimeoutException">java.util.concurrent.TimeoutException
+	at io.vertx.ext.unit.impl.TestContextImpl$Step.lambda$run$0(TestContextImpl.java:112)
+	at java.lang.Thread.run(Thread.java:745)
+</failure>
+  </testcase>
+  <system-out><![CDATA[/home/abdlquadri/OjingoLabsProject/source/training/salmon-killer-test
+reached application form urlunencoded
+com.datastax.driver.core.exceptions.InvalidQueryException: Keyspace entry_keyspace does not exist
+/home/abdlquadri/OjingoLabsProject/source/training/salmon-killer-test
+]]></system-out>
+  <system-err><![CDATA[Nov 19, 2016 8:28:16 AM io.vertx.core.impl.VertxImpl
+WARNING: You're already on a Vert.x context, are you sure you want to create a new Vertx instance?
+Nov 19, 2016 8:28:20 AM io.vertx.core.impl.BlockedThreadChecker
+WARNING: Thread Thread[vert.x-eventloop-thread-0,5,main] has been blocked for 2997 ms, time limit is 2000
+Nov 19, 2016 8:28:21 AM io.vertx.core.impl.BlockedThreadChecker
+WARNING: Thread Thread[vert.x-eventloop-thread-0,5,main] has been blocked for 3998 ms, time limit is 2000
+Nov 19, 2016 8:30:16 AM io.vertx.core.impl.VertxImpl
+WARNING: You're already on a Vert.x context, are you sure you want to create a new Vertx instance?
+Nov 19, 2016 8:30:16 AM io.vertx.core.http.impl.HttpClientRequestImpl
+SEVERE: io.netty.channel.AbstractChannel$AnnotatedConnectException: Connection refused: localhost/127.0.0.1:8000
+]]></system-err>
+</testsuite>

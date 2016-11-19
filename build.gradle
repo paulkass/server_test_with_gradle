@@ -1,0 +1,44 @@
+plugins {
+  id 'java'
+  id 'application'
+  id 'com.github.johnrengelman.shadow' version '1.2.3'
+}
+
+repositories {
+  jcenter()
+//  maven {
+//    url "https://oss.sonatype.org/content/repositories/iovertx-3295"
+//  }
+}
+
+version = '3.3.3'
+sourceCompatibility = '1.8'
+
+dependencies {
+  compile "io.vertx:vertx-core:$version"
+  compile "io.vertx:vertx-web:$version"
+  compile "com.datastax.cassandra:cassandra-driver-core:3.1.0"
+  compile "com.datastax.cassandra:cassandra-driver-mapping:3.1.0"
+  compile "com.datastax.cassandra:cassandra-driver-extras:3.1.0"
+
+  testCompile "io.vertx:vertx-unit:$version"
+  testCompile group: 'junit', name: 'junit', version: '4.12'
+}
+
+mainClassName = 'io.vertx.example.HelloWorldEmbedded'
+
+shadowJar {
+  classifier = 'fat'
+
+  manifest {
+    attributes 'Main-Class': 'io.vertx.core.Launcher'
+    attributes 'Main-Verticle': 'com.company.util.DeployerVerticle'
+  }
+  mergeServiceFiles {
+    include 'META-INF/services/io.vertx.core.spi.VerticleFactory'
+  }
+}
+
+task wrapper(type: Wrapper) {
+  gradleVersion = '2.8'
+}
