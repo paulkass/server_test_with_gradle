@@ -25,7 +25,12 @@ dependencies {
   testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-mainClassName = 'io.vertx.example.HelloWorldEmbedded'
+def mainVerticle = "com.company.MainVerticle"
+
+mainClassName = 'io.vertx.core.Starter'
+run {
+  args = ["run", mainVerticle]
+}
 
 shadowJar {
   classifier = 'fat'
