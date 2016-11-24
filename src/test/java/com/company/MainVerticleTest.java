@@ -6,10 +6,12 @@ import com.datastax.driver.core.Session;
 import io.vertx.core.Vertx;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.TestSuite;
 import io.vertx.ext.unit.junit.RunTestOnContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.UnsupportedEncodingException;
@@ -46,14 +48,21 @@ public class MainVerticleTest {
         vertx.close(context.asyncAssertSuccess());
     }
 
-    @Ignore
+
     public void start(TestContext context) throws Exception {
-        TestSuite suite = TestSuite.create("test_suite");
-        suite.test("basic_insert", context1 -> {
-            basicInsertTest(context1);
-        }).test("missing_param", context1 -> {
-           missingParametersTest(context1);
-        });
+//        TestSuite suite = TestSuite.create("test_suite");
+//        suite.test("basic_insert", context1 -> {
+//            basicInsertTest(context1);
+//        }).test("missing_param", context1 -> {
+//           missingParametersTest(context1);
+//        });
+    }
+
+    @Test
+    public void basic_test(TestContext context) {
+      System.out.println("Dummy Test Started");
+      assertEquals(true, true);
+      System.out.println("Dummy Test Ended");
     }
 
     @Test

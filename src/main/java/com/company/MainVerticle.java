@@ -3,6 +3,7 @@ package com.company;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import com.eaio.uuid.UUID;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
@@ -22,7 +23,6 @@ import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Created by SalmonKiller on 10/22/16.
@@ -288,7 +288,8 @@ public class MainVerticle extends AbstractVerticle {
   }
 
   private void insert_values(String body, String title, String expires, String private_string, RoutingContext routingContext) {
-    UUID uuid = UUID.randomUUID();
+    UUID uuid = new UUID();
+
 
     Cluster cluster = null;
     cluster = Cluster.builder()                                                    // (1)

@@ -9,6 +9,9 @@ repositories {
 //  maven {
 //    url "https://oss.sonatype.org/content/repositories/iovertx-3295"
 //  }
+  maven {
+    url "http://repo.eaio.com/maven2"
+  }
 }
 
 version = '3.3.3'
@@ -20,6 +23,7 @@ dependencies {
   compile "com.datastax.cassandra:cassandra-driver-core:3.1.0"
   compile "com.datastax.cassandra:cassandra-driver-mapping:3.1.0"
   compile "com.datastax.cassandra:cassandra-driver-extras:3.1.0"
+  compile "com.eaio.uuid:uuid:3.4"
 
   testCompile "io.vertx:vertx-unit:$version"
   testCompile group: 'junit', name: 'junit', version: '4.12'
