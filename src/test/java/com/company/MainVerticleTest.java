@@ -3,7 +3,10 @@ package com.company;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.RunTestOnContext;
@@ -19,7 +22,6 @@ import java.net.URLEncoder;
 import java.sql.Timestamp;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Created by SalmonKiller on 11/3/16.
@@ -38,9 +40,14 @@ public class MainVerticleTest {
     public RunTestOnContext rule = new RunTestOnContext();
 
     @Before
-    public void setUp() throws Exception {
-            vertx = Vertx.vertx();
-            vertx.deployVerticle(MainVerticle.class.getName());
+    public void setUp(TestContext context) throws Exception {
+      vertx = Vertx.vertx();
+
+      DeploymentOptions options = new DeploymentOptions()
+        .setConfig(new JsonObject().put("http.port", port)
+        );
+      vertx.deployVerticle(MainVerticle.class.getName(), options, context.asyncAssertSuccess());
+
     }
 
     @After
@@ -58,7 +65,7 @@ public class MainVerticleTest {
 //        });
     }
 
-    @Test
+
     public void basic_test(TestContext context) {
       System.out.println("Dummy Test Started");
       assertEquals(true, true);
@@ -69,6 +76,7 @@ public class MainVerticleTest {
     public void missingParametersTest(TestContext context) {
         Async async = context.async();
         Timestamp expires = generateTimestamp(100);
+
 
         String insertion_string = "";
 
@@ -81,19 +89,22 @@ public class MainVerticleTest {
             System.out.println(e.getStackTrace());
         }
 
-        vertx.createHttpClient().post(port, "localhost", "/entries/")
+      HttpClient client = vertx.createHttpClient();
+
+        client.post(port, "localhost", "/entries/")
                 .putHeader("content-type", "application/x-www-form-urlencoded")
                 .putHeader("content-length", ""+insertion_string.length())
                 .handler(httpClientResponse -> {
                     httpClientResponse.bodyHandler(body -> {
                         String entry_id = body.toString();
                         //System.out.println(entry_id);
-                        assertEquals(entry_id, MainVerticle.getMissing_params_message());
+                        context.assertEquals(entry_id, MainVerticle.getMissing_params_message());
                         async.complete();
                     });
                 })
                 .write(insertion_string)
                 .end();
+      //client.close();
     }
 
     private Timestamp generateTimestamp(Integer secs) {
@@ -102,10 +113,11 @@ public class MainVerticleTest {
         return expires;
     }
 
-    @Test
+   @Test
     public void basicInsertTest(TestContext context) {
         //WebDriver driver = new ChromeDriver();
         Async async = context.async();
+
 
         Timestamp expires = generateTimestamp(100);
 
@@ -120,7 +132,9 @@ public class MainVerticleTest {
             System.out.println(e.getStackTrace());
         }
 
-        vertx.createHttpClient().post(port, "localhost", "/entries/")
+        HttpClient client = vertx.createHttpClient();
+
+        client.post(port, "localhost", "/entries/")
                 .putHeader("content-type", "application/x-www-form-urlencoded")
                 .putHeader("content-length", ""+insertion_string.length())
                 .handler(httpClientResponse -> {
@@ -129,13 +143,14 @@ public class MainVerticleTest {
                         //System.out.println(entry_id);
                         Boolean x = checkIfExistsInDatabase(entry_id, "public");
                         //System.out.println(x);
-                        assertTrue(x);
+                        context.assertTrue(x);
                         async.complete();
                     });
                 })
                 .write(insertion_string)
                 .end();
 
+      //client.close();
     }
 
     public boolean checkIfExistsInDatabase(String entry_id, String table_name) {
