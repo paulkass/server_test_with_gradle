@@ -6,10 +6,12 @@ import com.datastax.driver.core.Session;
 import com.eaio.uuid.UUID;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.WebSocketFrame;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
@@ -234,15 +236,32 @@ public class MainVerticle extends AbstractVerticle {
 
       eb.consumer("new_public_message", message -> {
         JsonArray r = (JsonArray) message.body();
-//                StringBuffer buffer = new StringBuffer(r.getString(0));
-//                sockJSSocket.write(buffer);
+                StringBuffer buffer = new StringBuffer(r.getString(0));
+                //sockJSSocket.write("Hi");
       });
-      //sockJSSocket.handler();
+      Buffer buffer = Buffer.buffer("Lol hi");
+      sockJSSocket.write(buffer);
+//      sockJSSocket.handler();
     });
 
     router.route("/static/*").handler(StaticHandler.create("webroot"));
 
-    router.route("/latest/*").handler(sockJSHandler);
+    //router.route("/latest/*").handler(sockJSHandler);
+
+    server.websocketHandler(websocket -> {
+      System.out.println(websocket.path());
+      if (!websocket.path().startsWith("/latest")) {
+        System.out.println("socket rejected");
+        websocket.reject();
+      } else {
+        System.out.println("connected");
+      }
+      eb.consumer("new_public_message", message -> {
+        JsonArray r = (JsonArray) message.body();
+        WebSocketFrame socketFrame = WebSocketFrame.textFrame(r.getString(0), true);
+        websocket.writeFrame(socketFrame);
+      });
+    });
 
 
     server.requestHandler(router::accept).listen(8000);

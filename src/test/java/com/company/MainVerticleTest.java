@@ -22,6 +22,7 @@ import java.net.URLEncoder;
 import java.sql.Timestamp;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 /**
  * Created by SalmonKiller on 11/3/16.
@@ -153,11 +154,44 @@ public class MainVerticleTest {
       //client.close();
     }
 
+    @Test
+    public void socketTest(TestContext context) {
+      Async async = context.async();
+
+      try {
+        body_test = "much code";
+        title_test = "wow";
+
+        HttpClient client = vertx.createHttpClient();
+        client.websocket(port, "localhost", "/latest/", websocket -> {
+          //WebSocketFrame frame = WebSocketFrame.textFrame("hello there!", true);
+          //websocket.writeFrame(frame);
+          websocket.frameHandler(frame -> {
+            String response = frame.textData();
+            context.assertEquals(body_test, response);
+            System.out.println(response);
+            async.complete();
+          });
+          //System.out.println("Lol connected");
+          basicInsertTest(context);
+        });
+
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+    }
+
     public boolean checkIfExistsInDatabase(String entry_id, String table_name) {
         Cluster cluster = null;
-        cluster = Cluster.builder()                                                    // (1)
-                .addContactPoint("127.0.0.1")
-                .build();
+        try {
+
+          cluster = Cluster.builder()                                                    // (1)
+            .addContactPoint("127.0.0.1")
+            .build();
+        } catch (Exception e) {
+            fail(e.getMessage());
+        }
         Boolean return_value = false;
         try {
             Session session = cluster.connect();
