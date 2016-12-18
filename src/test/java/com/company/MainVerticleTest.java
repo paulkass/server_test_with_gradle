@@ -3,7 +3,9 @@ package com.company;
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.json.JsonObject;
@@ -179,12 +181,147 @@ public class MainVerticleTest {
              if (frame.isFinal()) {
                System.out.println("in the final section");
                async.complete();
+               //System.out.println(websocket.);
              }
            });
          } finally {
-           call_complete = false;
-           basicInsertTest(context);
-           call_complete = true;
+           TestContext context1 = new TestContext() {
+             @Override
+             public <T> T get(String key) {
+               return null;
+             }
+
+             @Override
+             public <T> T put(String key, Object value) {
+               return null;
+             }
+
+             @Override
+             public <T> T remove(String key) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertNull(Object expected) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertNull(Object expected, String message) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertNotNull(Object expected) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertNotNull(Object expected, String message) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertTrue(boolean condition) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertTrue(boolean condition, String message) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertFalse(boolean condition) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertFalse(boolean condition, String message) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertEquals(Object expected, Object actual) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertEquals(Object expected, Object actual, String message) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertInRange(double expected, double actual, double delta) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertInRange(double expected, double actual, double delta, String message) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertNotEquals(Object first, Object second) {
+               return null;
+             }
+
+             @Override
+             public TestContext assertNotEquals(Object first, Object second, String message) {
+               return null;
+             }
+
+             @Override
+             public void fail() {
+
+             }
+
+             @Override
+             public void fail(String message) {
+
+             }
+
+             @Override
+             public void fail(Throwable cause) {
+
+             }
+
+             @Override
+             public Async async() {
+               return null;
+             }
+
+             @Override
+             public Async async(int count) {
+               return null;
+             }
+
+             @Override
+             public <T> Handler<AsyncResult<T>> asyncAssertSuccess() {
+               return null;
+             }
+
+             @Override
+             public <T> Handler<AsyncResult<T>> asyncAssertSuccess(Handler<T> resultHandler) {
+               return null;
+             }
+
+             @Override
+             public <T> Handler<AsyncResult<T>> asyncAssertFailure() {
+               return null;
+             }
+
+             @Override
+             public <T> Handler<AsyncResult<T>> asyncAssertFailure(Handler<Throwable> causeHandler) {
+               return null;
+             }
+
+             @Override
+             public Handler<Throwable> exceptionHandler() {
+               return null;
+             }
+           };
+           basicInsertTest(context1);
          }
 
 
