@@ -229,21 +229,6 @@ public class MainVerticle extends AbstractVerticle {
 
     SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
 
-    sockJSHandler.socketHandler(sockJSSocket -> {
-
-      // Just echo the data back
-
-
-      eb.consumer("new_public_message", message -> {
-        JsonArray r = (JsonArray) message.body();
-                StringBuffer buffer = new StringBuffer(r.getString(0));
-                //sockJSSocket.write("Hi");
-      });
-      Buffer buffer = Buffer.buffer("Lol hi");
-      sockJSSocket.write(buffer);
-//      sockJSSocket.handler();
-    });
-
     router.route("/static/*").handler(StaticHandler.create("webroot"));
 
     //router.route("/latest/*").handler(sockJSHandler);
@@ -258,8 +243,12 @@ public class MainVerticle extends AbstractVerticle {
       }
       eb.consumer("new_public_message", message -> {
         JsonArray r = (JsonArray) message.body();
-        WebSocketFrame socketFrame = WebSocketFrame.textFrame(r.getString(0), true);
-        websocket.writeFrame(socketFrame);
+        WebSocketFrame socketFrame1 = WebSocketFrame.textFrame(r.getString(0), false);
+        WebSocketFrame socketFrame2 = WebSocketFrame.continuationFrame(Buffer.buffer(r.getString(1)), false);
+        WebSocketFrame socketFrame3 = WebSocketFrame.continuationFrame(Buffer.buffer(r.getString(2)), true);
+        websocket.writeFrame(socketFrame1);
+//        websocket.writeFrame(socketFrame2);
+        websocket.writeFrame(socketFrame3);
       });
     });
 
