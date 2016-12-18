@@ -36,6 +36,7 @@ public class MainVerticleTest {
     String body_test = "lol hi";
     String title_test = "A post lel";
     String private_test ="false";
+    Boolean call_complete = true;
 
     @Rule
     public RunTestOnContext rule = new RunTestOnContext();
@@ -105,6 +106,9 @@ public class MainVerticleTest {
                 })
                 .write(insertion_string)
                 .end();
+
+
+
       //client.close();
     }
 
@@ -145,11 +149,14 @@ public class MainVerticleTest {
                         Boolean x = checkIfExistsInDatabase(entry_id, "public");
                         //System.out.println(x);
                         context.assertTrue(x);
+                      if (call_complete) {
                         async.complete();
+                      }
                     });
                 })
                 .write(insertion_string)
                 .end();
+
 
       //client.close();
     }
@@ -164,16 +171,23 @@ public class MainVerticleTest {
 
         HttpClient client = vertx.createHttpClient();
         client.websocket(port, "localhost", "/latest/", websocket -> {
-          //WebSocketFrame frame = WebSocketFrame.textFrame("hello there!", true);
-          //websocket.writeFrame(frame);
-          websocket.frameHandler(frame -> {
-            String response = frame.textData();
-            context.assertEquals(body_test, response);
-            System.out.println(response);
-            async.complete();
-          });
-          //System.out.println("Lol connected");
-          basicInsertTest(context);
+         try {
+           websocket.frameHandler(frame -> {
+             String response = frame.textData();
+             System.out.println(response);
+
+             if (frame.isFinal()) {
+               System.out.println("in the final section");
+               async.complete();
+             }
+           });
+         } finally {
+           call_complete = false;
+           basicInsertTest(context);
+           call_complete = true;
+         }
+
+
         });
 
 
