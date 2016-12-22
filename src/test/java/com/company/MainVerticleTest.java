@@ -77,22 +77,13 @@ public class MainVerticleTest {
       System.out.println("Dummy Test Ended");
     }
 
-    @Test
-    public void missingParametersTest(TestContext context) {
-        Async async = context.async();
-        Timestamp expires = generateTimestamp(100);
+    interface Callback {
+      void operation(TestContext context);
+    }
 
 
-        String insertion_string = "";
+    public void missingParameterTestForError(TestContext context, String insertion_string, Callback p) {
 
-        try {
-
-            insertion_string = "title=" + URLEncoder.encode(title_test, "UTF-8");
-            insertion_string += "&private=" + URLEncoder.encode(private_test, "UTF-8")+"&expires="+
-                    URLEncoder.encode(expires.toString(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            System.out.println(e.getStackTrace());
-        }
 
       HttpClient client = vertx.createHttpClient();
 
@@ -104,7 +95,8 @@ public class MainVerticleTest {
                         String entry_id = body.toString();
                         //System.out.println(entry_id);
                         context.assertEquals(entry_id, MainVerticle.getMissing_params_message());
-                        async.complete();
+                        System.out.println("asserted");
+                        p.operation(context);
                     });
                 })
                 .write(insertion_string)
@@ -113,6 +105,30 @@ public class MainVerticleTest {
 
 
       //client.close();
+    }
+
+    @Test
+    public void missingBodyParameter(TestContext context) {
+      Async async = context.async();
+
+      Timestamp expires = generateTimestamp(100);
+
+
+      String insertion_string = "";
+
+      try {
+
+        insertion_string = "title=" + URLEncoder.encode(title_test, "UTF-8");
+        insertion_string += "&private=" + URLEncoder.encode(private_test, "UTF-8")+"&expires="+
+          URLEncoder.encode(expires.toString(), "UTF-8");
+        missingParameterTestForError(context, insertion_string, context1 -> {
+          //context1.async().complete();
+          async.complete();
+        });
+      } catch (UnsupportedEncodingException e) {
+        System.out.println(e.getStackTrace());
+      }
+
     }
 
     private Timestamp generateTimestamp(Integer secs) {
