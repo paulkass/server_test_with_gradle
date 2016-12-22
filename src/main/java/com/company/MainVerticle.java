@@ -6,7 +6,6 @@ import com.datastax.driver.core.Session;
 import com.eaio.uuid.UUID;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.http.HttpServerRequest;
@@ -243,12 +242,10 @@ public class MainVerticle extends AbstractVerticle {
       }
       eb.consumer("new_public_message", message -> {
         JsonArray r = (JsonArray) message.body();
-        WebSocketFrame socketFrame1 = WebSocketFrame.textFrame(r.getString(0), false);
-        WebSocketFrame socketFrame2 = WebSocketFrame.continuationFrame(Buffer.buffer(r.getString(1)), false);
-        WebSocketFrame socketFrame3 = WebSocketFrame.continuationFrame(Buffer.buffer(r.getString(2)), true);
-        websocket.writeFrame(socketFrame1);
-//        websocket.writeFrame(socketFrame2);
-        websocket.writeFrame(socketFrame3);
+        String sending_text = r.toString();
+
+        WebSocketFrame socketFrame = WebSocketFrame.textFrame(sending_text, true);
+        websocket.writeFrame(socketFrame);
       });
     });
 

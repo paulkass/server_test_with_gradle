@@ -8,6 +8,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
@@ -163,6 +164,153 @@ public class MainVerticleTest {
       //client.close();
     }
 
+   //@Test
+    public void v2SocketTest(TestContext context) {
+      Async async = context.async();
+
+      try {
+
+      } finally {
+        TestContext context1 = new TestContext() {
+          @Override
+          public <T> T get(String key) {
+            return null;
+          }
+
+          @Override
+          public <T> T put(String key, Object value) {
+            return null;
+          }
+
+          @Override
+          public <T> T remove(String key) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertNull(Object expected) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertNull(Object expected, String message) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertNotNull(Object expected) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertNotNull(Object expected, String message) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertTrue(boolean condition) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertTrue(boolean condition, String message) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertFalse(boolean condition) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertFalse(boolean condition, String message) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertEquals(Object expected, Object actual) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertEquals(Object expected, Object actual, String message) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertInRange(double expected, double actual, double delta) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertInRange(double expected, double actual, double delta, String message) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertNotEquals(Object first, Object second) {
+            return null;
+          }
+
+          @Override
+          public TestContext assertNotEquals(Object first, Object second, String message) {
+            return null;
+          }
+
+          @Override
+          public void fail() {
+
+          }
+
+          @Override
+          public void fail(String message) {
+
+          }
+
+          @Override
+          public void fail(Throwable cause) {
+
+          }
+
+          @Override
+          public Async async() {
+            return null;
+          }
+
+          @Override
+          public Async async(int count) {
+            return null;
+          }
+
+          @Override
+          public <T> Handler<AsyncResult<T>> asyncAssertSuccess() {
+            return null;
+          }
+
+          @Override
+          public <T> Handler<AsyncResult<T>> asyncAssertSuccess(Handler<T> resultHandler) {
+            return null;
+          }
+
+          @Override
+          public <T> Handler<AsyncResult<T>> asyncAssertFailure() {
+            return null;
+          }
+
+          @Override
+          public <T> Handler<AsyncResult<T>> asyncAssertFailure(Handler<Throwable> causeHandler) {
+            return null;
+          }
+
+          @Override
+          public Handler<Throwable> exceptionHandler() {
+            return null;
+          }
+        };
+        basicInsertTest(context1);
+      }
+    }
+
     @Test
     public void socketTest(TestContext context) {
       Async async = context.async();
@@ -176,11 +324,17 @@ public class MainVerticleTest {
          try {
            websocket.frameHandler(frame -> {
              String response = frame.textData();
-             System.out.println(response);
+
+             JsonArray jsonArray = new JsonArray(response);
+
+            //System.out.println(jsonArray.toString());
+
+             context.assertEquals(jsonArray.getString(0), body_test);
+             context.assertEquals(jsonArray.getString(1), title_test);
 
              if (frame.isFinal()) {
-               System.out.println("in the final section");
                async.complete();
+               websocket.close();
                //System.out.println(websocket.);
              }
            });
