@@ -95,7 +95,7 @@ public class MainVerticleTest {
                         String entry_id = body.toString();
                         //System.out.println(entry_id);
                         context.assertEquals(entry_id, MainVerticle.getMissing_params_message());
-                        System.out.println("asserted");
+                        //System.out.println("asserted");
                         p.operation(context);
                     });
                 })
@@ -108,11 +108,33 @@ public class MainVerticleTest {
     }
 
     @Test
-    public void missingBodyParameter(TestContext context) {
+    public void missingTitleParameter(TestContext context) {
       Async async = context.async();
 
       Timestamp expires = generateTimestamp(100);
 
+      String insertion_string = "";
+
+      try {
+
+        insertion_string = "body=" + URLEncoder.encode(body_test, "UTF-8");
+        insertion_string += "&private=" + URLEncoder.encode(private_test, "UTF-8")+"&expires="+
+          URLEncoder.encode(expires.toString(), "UTF-8");
+        missingParameterTestForError(context, insertion_string, context1 -> {
+          //context1.async().complete();
+          async.complete();
+          //System.out.println("Completed the callback");
+        });
+      } catch (UnsupportedEncodingException e) {
+        System.out.println(e.getStackTrace());
+      }
+    }
+
+    @Test
+    public void missingBodyParameter(TestContext context) {
+      Async async = context.async();
+
+      Timestamp expires = generateTimestamp(100);
 
       String insertion_string = "";
 
@@ -124,6 +146,7 @@ public class MainVerticleTest {
         missingParameterTestForError(context, insertion_string, context1 -> {
           //context1.async().complete();
           async.complete();
+          //System.out.println("Completed the callback");
         });
       } catch (UnsupportedEncodingException e) {
         System.out.println(e.getStackTrace());
