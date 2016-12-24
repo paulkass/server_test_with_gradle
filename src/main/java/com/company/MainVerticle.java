@@ -62,7 +62,7 @@ public class MainVerticle extends AbstractVerticle {
             String[] param = x[i].split("\\=");
             map.put(param[0], param[1]);
           }
-          if (map.get("body") == null || map.get("title") == null) {
+          if (map.get("body") == null ) {
             System.out.println("throwing exception");
             throw new RequiredParamsMissingException();
           }

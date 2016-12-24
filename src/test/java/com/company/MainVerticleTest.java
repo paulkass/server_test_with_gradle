@@ -82,7 +82,7 @@ public class MainVerticleTest {
     }
 
 
-    public void missingParameterTestForError(TestContext context, String insertion_string, Callback p) {
+    private void missingParameterTestForError(TestContext context, String insertion_string, Callback p) {
 
 
       HttpClient client = vertx.createHttpClient();
@@ -107,6 +107,23 @@ public class MainVerticleTest {
       //client.close();
     }
 
+    private void missingParameterTestWithoutError(TestContext context, String insertion_string, String table_name, String param_name, Callback p) {
+      HttpClient client = vertx.createHttpClient();
+
+      client.post(port, "localhost", "/entries/")
+        .putHeader("content-type", "application/x-www-form-urlencoded")
+        .putHeader("content-length", ""+insertion_string.length())
+        .handler(httpClientResponse -> {
+          httpClientResponse.bodyHandler(body -> {
+            String entry_id = body.toString();
+            context.assertTrue(checkIfPropertyIsNull(entry_id, table_name, param_name));
+            p.operation(context);
+          });
+        })
+        .write(insertion_string)
+        .end();
+    }
+
     @Test
     public void missingTitleParameter(TestContext context) {
       Async async = context.async();
@@ -120,15 +137,15 @@ public class MainVerticleTest {
         insertion_string = "body=" + URLEncoder.encode(body_test, "UTF-8");
         insertion_string += "&private=" + URLEncoder.encode(private_test, "UTF-8")+"&expires="+
           URLEncoder.encode(expires.toString(), "UTF-8");
-        missingParameterTestForError(context, insertion_string, context1 -> {
-          //context1.async().complete();
+        missingParameterTestWithoutError(context, insertion_string, "public", "title", context1 -> {
           async.complete();
-          //System.out.println("Completed the callback");
         });
       } catch (UnsupportedEncodingException e) {
         System.out.println(e.getStackTrace());
       }
     }
+
+    
 
     @Test
     public void missingBodyParameter(TestContext context) {
@@ -146,7 +163,7 @@ public class MainVerticleTest {
         missingParameterTestForError(context, insertion_string, context1 -> {
           //context1.async().complete();
           async.complete();
-          //System.out.println("Completed the callback");
+          // System.out.println("Completed the callback");
         });
       } catch (UnsupportedEncodingException e) {
         System.out.println(e.getStackTrace());
@@ -377,6 +394,36 @@ public class MainVerticleTest {
 
       } catch (Exception e) {
         e.printStackTrace();
+      }
+    }
+
+    public boolean checkIfPropertyIsNull(String entry_id, String table_name, String property_name) {
+      Cluster cluster = null;
+      try {
+
+        cluster = Cluster.builder()                                                    // (1)
+          .addContactPoint("127.0.0.1")
+          .build();
+      } catch (Exception e) {
+        fail(e.getMessage());
+      }
+      Boolean return_value = false;
+      try {
+        Session session = cluster.connect();
+        ResultSet resultSet = session.execute("select "+property_name+" from entry_keyspace.entries_table_" + table_name + " where entry_id=" +
+          entry_id + ";");
+
+        String value = resultSet.one().getString(property_name);
+        //System.out.println(value.getClass().toString());
+        if (value.equals("null")) {
+          return_value = true;
+        }
+
+        return return_value;
+
+
+      } finally {
+        if (cluster!=null) {cluster.close();}
       }
     }
 
