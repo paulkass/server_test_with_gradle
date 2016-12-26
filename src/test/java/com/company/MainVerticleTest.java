@@ -70,6 +70,14 @@ public class MainVerticleTest {
 //        });
     }
 
+    private void resetBasicValues() {
+      body_test = "lol hi";
+      title_test = "A post lel";
+      private_test ="false";
+      call_complete = true;
+    }
+
+
 
     public void basic_test(TestContext context) {
       System.out.println("Dummy Test Started");
@@ -81,6 +89,13 @@ public class MainVerticleTest {
       void operation(TestContext context);
     }
 
+    interface TimeCallback {
+      void operation(String entry_id);
+    }
+
+  interface databaseCallback {
+    void operation(ResultSet resultSet);
+  }
 
     private void missingParameterTestForError(TestContext context, String insertion_string, Callback p) {
 
@@ -124,6 +139,22 @@ public class MainVerticleTest {
         .end();
     }
 
+    private void missingTimeParam(TestContext context, String insertion_string, TimeCallback p) {
+
+
+      HttpClient client = vertx.createHttpClient();
+
+      client.post(port, "localhost", "/entries/")
+        .putHeader("content-type", "application/x-www-form-urlencoded")
+        .putHeader("content-length", ""+insertion_string.length())
+        .handler(httpClientResponse -> httpClientResponse.bodyHandler(body -> {
+          String entry_id = body.toString();
+          p.operation(entry_id);
+        }))
+        .write(insertion_string)
+        .end();
+    }
+
     @Test
     public void missingTitleParameter(TestContext context) {
       Async async = context.async();
@@ -145,7 +176,39 @@ public class MainVerticleTest {
       }
     }
 
-    
+     @Test
+     public void missingExpirationDate(TestContext context) {
+
+       resetBasicValues();
+       Async async = context.async();
+
+       String insertion_string = "";
+
+       try {
+
+         insertion_string = "body=" + URLEncoder.encode(body_test, "UTF-8");
+         insertion_string += "&private=" + URLEncoder.encode(private_test, "UTF-8");
+         missingTimeParam(context, insertion_string, entry_id -> {
+           System.out.println(entry_id);
+           String table_name = "";
+           if (private_test.equals("true")) {
+             table_name = "private";
+           } else { table_name = "public";}
+           String execution_string = "select ttl(body) from entry_keyspace.entries_table_" + table_name + " where entry_id=" +
+             entry_id + ";";
+           System.out.println(execution_string);
+           generalDatabaseQuery(execution_string, resultSet -> {
+             String result = resultSet.one().getString("ttl(body)");
+             System.out.println("in DB callback");
+             context.assertEquals(result, "null");
+
+           });
+           async.complete();
+         });
+       } catch (UnsupportedEncodingException e) {
+         System.out.println(e.getStackTrace());
+       }
+     }
 
     @Test
     public void missingBodyParameter(TestContext context) {
@@ -397,6 +460,8 @@ public class MainVerticleTest {
       }
     }
 
+
+
     public boolean checkIfPropertyIsNull(String entry_id, String table_name, String property_name) {
       Cluster cluster = null;
       try {
@@ -453,6 +518,33 @@ public class MainVerticleTest {
         } finally {
             if (cluster!=null) {cluster.close();}
         }
+
+    }
+
+    public void generalDatabaseQuery(String execution_string, databaseCallback callback) {
+      Cluster cluster = null;
+      try {
+
+        cluster = Cluster.builder()                                                    // (1)
+          .addContactPoint("127.0.0.1")
+          .build();
+      } catch (Exception e) {
+        fail(e.getMessage());
+      }
+
+
+
+        Session session = cluster.connect();
+
+        ResultSet resultSet = session.execute(execution_string);
+        System.out.println("getting results");
+
+        callback.operation(resultSet);
+
+
+
+        if (cluster!=null) {cluster.close();}
+
 
     }
 

@@ -67,7 +67,12 @@ public class MainVerticle extends AbstractVerticle {
             throw new RequiredParamsMissingException();
           }
 
+          if (!map.containsKey("expires")) {
+            map.put("expires", "-1"); // secret code for no expiration
+          }
+
           insert_values(map.get("body"), map.get("title"), map.get("expires"), map.get("private"), routingContext);
+          System.out.println("inserted values");
 
         } catch (UnsupportedEncodingException e) {
           e.printStackTrace();
@@ -312,9 +317,13 @@ public class MainVerticle extends AbstractVerticle {
 //                System.out.println(new Timestamp(System.currentTimeMillis()).toString());
 //                System.out.println(Timestamp.valueOf(expires).toString());
 //                System.out.println(expirationTime);
+      String executionString="";
 
-
-      String executionString = get_insertion_statement(uuid.toString(), table_name, body, title, get_expiration_secs(expires));
+      if (expires.equals("-1")) {
+        executionString = get_insertion_statement(uuid.toString(), table_name, body, title);
+      } else {
+        executionString = get_insertion_statement(uuid.toString(), table_name, body, title, get_expiration_secs(expires));
+      }
       session.execute(executionString);
       if (private_string.equals("false")) {
         //String[] array = {body, title, expires};
