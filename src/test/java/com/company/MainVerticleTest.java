@@ -268,12 +268,17 @@ public class MainVerticleTest {
                     httpClientResponse.bodyHandler(body -> {
                         String entry_id = body.toString();
                         //System.out.println(entry_id);
-                        Boolean x = checkIfExistsInDatabase(entry_id, "public");
+                        //Boolean x = checkIfExistsInDatabase(entry_id, "public");
+                        generalDatabaseQuery("select * from entry_keyspace.entries_table_public where entry_id=" +
+                          entry_id + ";", resultSet -> {
+                          context.assertFalse(resultSet.isExhausted());
+                          if (call_complete) {
+                            async.complete();
+                          }
+                        });
                         //System.out.println(x);
-                        context.assertTrue(x);
-                      if (call_complete) {
-                        async.complete();
-                      }
+                        //context.assertTrue(x);
+
                     });
                 })
                 .write(insertion_string)
@@ -490,35 +495,6 @@ public class MainVerticleTest {
       } finally {
         if (cluster!=null) {cluster.close();}
       }
-    }
-
-    public boolean checkIfExistsInDatabase(String entry_id, String table_name) {
-        Cluster cluster = null;
-        try {
-
-          cluster = Cluster.builder()                                                    // (1)
-            .addContactPoint("127.0.0.1")
-            .build();
-        } catch (Exception e) {
-            fail(e.getMessage());
-        }
-        Boolean return_value = false;
-        try {
-            Session session = cluster.connect();
-            ResultSet resultSet = session.execute("select * from entry_keyspace.entries_table_" + table_name + " where entry_id=" +
-                    entry_id + ";");
-
-            if (!resultSet.isExhausted()) {
-                return_value = true;
-            }
-
-            return return_value;
-
-
-        } finally {
-            if (cluster!=null) {cluster.close();}
-        }
-
     }
 
     public void generalDatabaseQuery(String execution_string, databaseCallback callback) {
