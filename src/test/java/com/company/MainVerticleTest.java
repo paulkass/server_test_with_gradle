@@ -2,6 +2,7 @@ package com.company;
 
 import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
+import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
@@ -78,7 +79,7 @@ public class MainVerticleTest {
     }
 
 
-
+    @Test
     public void basic_test(TestContext context) {
       System.out.println("Dummy Test Started");
       assertEquals(true, true);
@@ -194,13 +195,15 @@ public class MainVerticleTest {
            if (private_test.equals("true")) {
              table_name = "private";
            } else { table_name = "public";}
-           String execution_string = "select ttl(body) from entry_keyspace.entries_table_" + table_name + " where entry_id=" +
+           String execution_string = "select entry_id, ttl(body) as time_to_expire, ttl(title) as time_to_title from entry_keyspace.entries_table_" + table_name + " where entry_id=" +
              entry_id + ";";
            System.out.println(execution_string);
            generalDatabaseQuery(execution_string, resultSet -> {
-             String result = resultSet.one().getString("ttl(body)");
-             System.out.println("in DB callback");
-             context.assertEquals(result, "null");
+             Row result_row = resultSet.one();
+             System.out.println(result_row.toString());
+//             String result = result_row.getString("time_to_expire");
+//             System.out.println(result);
+
 
            });
            async.complete();
@@ -514,6 +517,7 @@ public class MainVerticleTest {
 
         ResultSet resultSet = session.execute(execution_string);
         System.out.println("getting results");
+
 
         callback.operation(resultSet);
 
