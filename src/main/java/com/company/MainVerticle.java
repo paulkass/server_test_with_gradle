@@ -37,6 +37,8 @@ public class MainVerticle extends AbstractVerticle {
   public void start() throws Exception {
     server = vertx.createHttpServer();
 
+    System.out.println("Started the server");
+
     eb = vertx.eventBus();
 
     Router router = Router.router(vertx);
