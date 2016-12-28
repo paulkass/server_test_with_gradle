@@ -1,7 +1,5 @@
-create keyspace entry_keyspace WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
+create keyspace if not exists entry_keyspace WITH replication = {'class': 'SimpleStrategy', 'replication_factor': 1};
 
-describe keyspaces;
+create table if not exists entry_keyspace.entries_table_public ( entry_id timeuuid, body text, title text, primary key (entry_id) );
 
-create table entry_keyspace.entries_table_public ( entry_id timeuuid, body text, title text, primary key (entry_id) );
-
-describe entry_keyspace.entries_table_public;
+create table if not exists entry_keyspace.entries_table_private ( entry_id timeuuid, body text, title text, primary key (entry_id) );
