@@ -20,10 +20,5 @@ RUN gradle build -x test
 EXPOSE 8000
 # CMD cassandra -R && sleep 20 && cqlsh -u cassandra -p cassandra -f schema_definition.txt && gradle run
 
-# Make sure that a cassandra DB is running on 127.0.0.1:9042 and has the DB specified in schema_definition.txt
-<<<<<<< HEAD
-CMD cassandra -R && sleep 20 && cqlsh -u cassandra -p cassandra -f schema_definition.txt && sleep 20 && gradle test --info && gradle run
-=======
 RUN cassandra -R && sleep $SLEEP_TIME && cqlsh -u cassandra -p cassandra -f schema_definition.txt && sleep $SLEEP_TIME && gradle test --info
 CMD cassandra -R && sleep $SLEEP_TIME && cqlsh -u cassandra -p cassandra -f schema_definition.txt && sleep $SLEEP_TIME && gradle run
->>>>>>> temporary_test
