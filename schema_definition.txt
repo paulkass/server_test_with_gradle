@@ -2,6 +2,4 @@ create keyspace entry_keyspace WITH replication = {'class': 'SimpleStrategy', 'r
 
 describe keyspaces;
 
-use entry_keyspace;
-
-describe tables;
+create table entry_keyspace.entries_table_public ( entry_id timeuuid, body text, title text, primary key (entry_id) );
