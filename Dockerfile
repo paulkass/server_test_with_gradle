@@ -20,4 +20,5 @@ EXPOSE 8000
 # CMD cassandra -R && sleep 20 && cqlsh -u cassandra -p cassandra -f schema_definition.txt && gradle run
 
 # Make sure that a cassandra DB is running on 127.0.0.1:9042 and has the DB specified in schema_definition.txt
-CMD cassandra -R && sleep 20 && cqlsh -u cassandra -p cassandra -f schema_definition.txt && sleep 20 && gradle test --info && gradle run
+RUN cassandra -R && sleep 5 && cqlsh -u cassandra -p cassandra -f schema_definition.txt && sleep 5 && gradle test --info
+CMD cassandra -R && sleep 5 && cqlsh -u cassandra -p cassandra -f schema_definition.txt && sleep 5 && gradle run
