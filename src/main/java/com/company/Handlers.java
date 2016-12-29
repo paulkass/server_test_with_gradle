@@ -56,25 +56,21 @@ public class Handlers {
       .build();
 
     try {
-
       Session session = cluster.connect();
       ResultSet resultSet = session.execute("select * from entry_keyspace.entries_table_public;");
-
       final String[] output_string = {""};
+
       resultSet.forEach(row -> {
         String myString = "\n" + row.getString("body");
         // System.out.println(myString);
         output_string[0] = output_string[0] + myString;
       });
-
+      
       HttpServerResponse response = routingContext.response();
       response.putHeader("content-type", "text/plain");
-
       response.end(output_string[0]);
     } finally {
       if (cluster != null) cluster.close();
     }
-
-
   };
 }
