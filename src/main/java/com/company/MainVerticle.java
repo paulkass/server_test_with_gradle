@@ -12,6 +12,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.WebSocketFrame;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -19,8 +20,6 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
 import java.io.File;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,30 +53,14 @@ public class MainVerticle extends AbstractVerticle {
 
       request.bodyHandler(data -> {
 
+
         try {
-          String decoded_string = URLDecoder.decode(data.toString(), "utf-8");
-//                            System.out.println(data.toString());
-//                            System.out.println(decoded_string);
-          String[] x = decoded_string.split("\\&");
-          for (int i = 0; i < x.length; i++) {
-            //System.out.println(x[i]);
-            String[] param = x[i].split("\\=");
-            map.put(param[0], param[1]);
-          }
-          if (map.get("body") == null ) {
-            System.out.println("throwing exception");
-            throw new RequiredParamsMissingException();
-          }
+          JsonObject data_object = ParameterValidation.validate(data);
 
-          if (!map.containsKey("expires")) {
-            map.put("expires", "-1"); // secret code for no expiration
-          }
-
-          insert_values(map.get("body"), map.get("title"), map.get("expires"), map.get("private"), routingContext);
+          insert_values(data_object.getString("body"), data_object.getString("title"),
+            data_object.getString("expires"), data_object.getString("private"), routingContext);
           System.out.println("inserted values");
 
-        } catch (UnsupportedEncodingException e) {
-          e.printStackTrace();
         } catch (RequiredParamsMissingException e) {
           routingContext.response().end(missing_params_message);
         }
