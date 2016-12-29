@@ -75,18 +75,12 @@ public class MainVerticle extends AbstractVerticle {
     });
 
     router.post("/entries/").handler(routingContext -> {
-
-      //System.out.println(routingContext.request().getHeader("content-type"));
-      String body = routingContext.request().getParam("body");
-      String title = routingContext.request().getParam("title");
-      String expires = routingContext.request().getParam("expires");
-      String private_string = routingContext.request().getParam("private");
-
-      //System.out.println(body);
-
-      // ******** Make Try catches for the errors that might happen with invalid data ********
-
-      insert_values(body, title, expires, private_string, routingContext);
+      routingContext.request().handler(data -> {
+        JsonObject data_in_json = ParameterValidation.validate(data);
+        System.out.println(data_in_json.toString());
+        insert_values(data_in_json.getString("body"), data_in_json.getString("title"),
+          data_in_json.getString("expires"), data_in_json.getString("private"), routingContext);
+      });
     });
 
 

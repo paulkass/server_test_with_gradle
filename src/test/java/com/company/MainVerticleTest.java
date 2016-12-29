@@ -243,24 +243,66 @@ public class MainVerticleTest {
         return expires;
     }
 
+    private String getStandardInsertionString() {
+      Timestamp expires = generateTimestamp(100);
+
+      String insertion_string = "";
+
+      try {
+
+        insertion_string = "body=" + URLEncoder.encode(body_test, "UTF-8") + "&title=" + URLEncoder.encode(title_test, "UTF-8");
+        insertion_string += "&private=" + URLEncoder.encode(private_test, "UTF-8")+"&expires="+
+          URLEncoder.encode(expires.toString(), "UTF-8");
+      } catch (UnsupportedEncodingException e) {
+        System.out.println(e.getStackTrace());
+      }
+
+      return insertion_string;
+    }
+
+    @Test
+    public void jsonInsertTest(TestContext context) {
+        Async async = context.async();
+
+        JsonObject insertion_object = new JsonObject();
+
+        Timestamp expires = generateTimestamp(100);
+
+        insertion_object.put("body", body_test);
+        insertion_object.put("title",title_test);
+        insertion_object.put("private", private_test);
+        insertion_object.put("expires", expires.toString());
+
+        String insertion_string = insertion_object.encode();
+
+        HttpClient client = vertx.createHttpClient();
+
+        client.post(port, "localhost", "/entries/")
+          .putHeader("content-type", "application/json")
+          .putHeader("content-length", ""+insertion_string.length())
+          .handler(httpClientResponse -> {
+              httpClientResponse.bodyHandler(body -> {
+                String entry_id = body.toString();
+                generalDatabaseQuery("select * from entry_keyspace.entries_table_public where entry_id=" +
+                  entry_id + ";", resultSet -> {
+                  context.assertFalse(resultSet.isExhausted());
+                  if (call_complete) {
+                    async.complete();
+                  }
+                });
+                async.complete();
+              });
+          })
+        .write(insertion_string)
+        .end();
+    }
+
    @Test
     public void basicInsertTest(TestContext context) {
         //WebDriver driver = new ChromeDriver();
         Async async = context.async();
 
-
-        Timestamp expires = generateTimestamp(100);
-
-        String insertion_string = "";
-
-        try {
-
-            insertion_string = "body=" + URLEncoder.encode(body_test, "UTF-8") + "&title=" + URLEncoder.encode(title_test, "UTF-8");
-            insertion_string += "&private=" + URLEncoder.encode(private_test, "UTF-8")+"&expires="+
-                    URLEncoder.encode(expires.toString(), "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            System.out.println(e.getStackTrace());
-        }
+        String insertion_string = getStandardInsertionString();
 
         HttpClient client = vertx.createHttpClient();
 

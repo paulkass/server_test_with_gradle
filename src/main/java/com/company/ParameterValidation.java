@@ -20,9 +20,15 @@ public class ParameterValidation {
     try {
       String decoded_string = URLDecoder.decode(data.toString(), "utf-8");
       String[] x = decoded_string.split("\\&");
-      for (int i = 0; i < x.length; i++) {
-        String[] param = x[i].split("\\=");
-        return_json.put(param[0], param[1]);
+      if (x.length == 1) {
+        // Means the data arrived in JSON format
+        return_json = data.toJsonObject();
+      } else {
+        for (int i = 0; i < x.length; i++) {
+          String[] param = x[i].split("\\=");
+          //System.out.println(param[0] + "," + param[1]);
+          return_json.put(param[0], param[1]);
+        }
       }
 
 
@@ -35,6 +41,10 @@ public class ParameterValidation {
         }
     } catch (UnsupportedEncodingException e) {
       Logger.getLogger(ParameterValidation.class.getName()).log(Level.SEVERE, "Invalid data input format");
+    } catch (RequiredParamsMissingException e) {
+      throw e;
+    } catch (Exception e) {
+      Logger.getLogger(ParameterValidation.class.getName()).log(Level.SEVERE, e.getMessage());
     }
 
     return return_json;
