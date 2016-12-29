@@ -16,8 +16,6 @@ public class Utils {
   public static void insert_values(EventBus eb, String body, String title, String expires, String private_string, RoutingContext routingContext) {
     UUID uuid = new UUID();
 
-   // EventBus eb = vertx.eventBus();
-
     Cluster cluster = null;
     cluster = Cluster.builder()                                                    // (1)
       .addContactPoint("127.0.0.1")
@@ -29,11 +27,6 @@ public class Utils {
       if (private_string.equals("true")) {
         table_name = "entries_table_private";
       }
-
-
-//                System.out.println(new Timestamp(System.currentTimeMillis()).toString());
-//                System.out.println(Timestamp.valueOf(expires).toString());
-//                System.out.println(expirationTime);
       String executionString="";
 
       if (expires.equals("-1")) {
@@ -43,7 +36,6 @@ public class Utils {
       }
       session.execute(executionString);
       if (private_string.equals("false")) {
-        //String[] array = {body, title, expires};
         JsonArray array = new JsonArray();
         array.add(body);
         array.add(title);
@@ -65,19 +57,16 @@ public class Utils {
   }
 
   public static String get_insertion_statement(String code, String table_name, String body, String title) {
-    // ***** handle optional entries here
     return "insert into entry_keyspace." + table_name + " (entry_id, body, title) " +
       "values (" + code + ", '" + body + "', '" + title + "') ;";
   }
 
   public static String get_insertion_statement(String code, String table_name, String body, String title, Double expirationTime) {
-    // ***** handle optional entries here
     return "insert into entry_keyspace." + table_name + " (entry_id, body, title) " +
       "values (" + code + ", '" + body + "', '" + title + "') using ttl " + expirationTime.intValue() + ";";
   }
 
   public static String get_update_statement(String entry_id, String table_name, String body, String title, Double expirationTime) {
-    // ***** handle optional entries here
     return "update entry_keyspace." + table_name + " using ttl " + expirationTime.intValue() + " set body='" + body +
       "', title='" + title + "' where entry_id=" + entry_id + ";";
   }

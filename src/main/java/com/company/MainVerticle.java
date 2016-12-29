@@ -8,11 +8,9 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.http.WebSocketFrame;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
@@ -21,10 +19,6 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
 import java.io.File;
 import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Created by SalmonKiller on 10/22/16.
@@ -46,35 +40,9 @@ public class MainVerticle extends AbstractVerticle {
 
     System.out.println(new File("").getCanonicalPath());
 
-    router.post("/entries/").consumes("application/x-www-form-urlencoded").handler(routingContext -> {
-      System.out.println("reached application form urlunencoded");
-      HttpServerRequest request = routingContext.request();
-      String type = request.getHeader("content-type");
-      String[] return_array = {null, null, null, null}; // body, title, expire, private
-      Map<String, String> map = new HashMap<String, String>();
+    router.post("/entries/").consumes("application/x-www-form-urlencoded").handler(Handlers.BASIC_FORM_UNENCODED_HANDLER);
 
-      request.bodyHandler(data -> {
-
-
-        try {
-          JsonObject data_object = ParameterValidation.validate(data);
-
-          insert_values(data_object.getString("body"), data_object.getString("title"),
-            data_object.getString("expires"), data_object.getString("private"), routingContext);
-          System.out.println("inserted values");
-
-        } catch (RequiredParamsMissingException e) {
-          Logger.getAnonymousLogger().log(Level.INFO, "Caught a RequiredParamsMissingException");
-          routingContext.response().end(missing_params_message);
-        }
-
-
-      });
-
-
-    });
-
-    router.post("/entries/").handler(Handlers.JSON_HANDLER);
+    router.post("/entries/").handler(Handlers.BASIC_JSON_HANDLER);
 
 
     router.get("/entries/").handler(routingContext -> {
