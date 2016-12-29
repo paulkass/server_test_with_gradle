@@ -14,7 +14,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
 import java.io.File;
@@ -44,35 +43,7 @@ public class MainVerticle extends AbstractVerticle {
 
     router.post("/entries/").handler(Handlers.BASIC_JSON_HANDLER);
 
-
-    router.get("/entries/").handler(routingContext -> {
-      Cluster cluster = null;
-      cluster = Cluster.builder()                                                    // (1)
-        .addContactPoint("127.0.0.1")
-        .build();
-
-      try {
-
-        Session session = cluster.connect();
-        ResultSet resultSet = session.execute("select * from entry_keyspace.entries_table_public;");
-
-        final String[] output_string = {""};
-        resultSet.forEach(row -> {
-          String myString = "\n" + row.getString("body");
-          // System.out.println(myString);
-          output_string[0] = output_string[0] + myString;
-        });
-
-        HttpServerResponse response = routingContext.response();
-        response.putHeader("content-type", "text/plain");
-
-        response.end(output_string[0]);
-      } finally {
-        if (cluster != null) cluster.close();
-      }
-
-
-    });
+    router.get("/entries/").handler(Handlers.GET_ALL_ENTRIES_HANDLER);
 
     router.put("/entries/:entry_id/").handler(routingContext -> {
       String entry_id = routingContext.request().getParam("entry_id");
@@ -173,8 +144,6 @@ public class MainVerticle extends AbstractVerticle {
     });
 
     SockJSHandlerOptions options = new SockJSHandlerOptions().setHeartbeatInterval(2000);
-
-    SockJSHandler sockJSHandler = SockJSHandler.create(vertx, options);
 
     router.route("/static/*").handler(StaticHandler.create("webroot"));
 
