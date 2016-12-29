@@ -30,8 +30,8 @@ import java.util.logging.Logger;
  * Created by SalmonKiller on 10/22/16.
  */
 public class MainVerticle extends AbstractVerticle {
-  HttpServer server;
-  EventBus eb;
+  static HttpServer server;
+  static EventBus eb;
   static String missing_params_message = "Sorry, some of the essential parameters are missing.";
 
   @Override
@@ -74,14 +74,7 @@ public class MainVerticle extends AbstractVerticle {
 
     });
 
-    router.post("/entries/").handler(routingContext -> {
-      routingContext.request().handler(data -> {
-        JsonObject data_in_json = ParameterValidation.validate(data);
-        System.out.println(data_in_json.toString());
-        insert_values(data_in_json.getString("body"), data_in_json.getString("title"),
-          data_in_json.getString("expires"), data_in_json.getString("private"), routingContext);
-      });
-    });
+    router.post("/entries/").handler(Handlers.JSON_HANDLER);
 
 
     router.get("/entries/").handler(routingContext -> {
