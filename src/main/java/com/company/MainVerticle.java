@@ -1,20 +1,16 @@
 package com.company;
 
 import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import com.eaio.uuid.UUID;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServer;
-import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.http.WebSocketFrame;
 import io.vertx.core.json.JsonArray;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
 import java.io.File;
 import java.sql.Timestamp;
@@ -47,62 +43,11 @@ public class MainVerticle extends AbstractVerticle {
 
     router.put("/entries/:entry_id/").handler(Handlers.SPECIFIC_ENTRY_HANDLER);
 
-    router.delete("/entries/:entry_id/").handler(routingContext -> {
-      String entry_id = routingContext.request().getParam("entry_id");
-
-      HttpServerResponse response = routingContext.response();
-      response.putHeader("content-type", "text/plain");
-      response.end("");
-
-      Cluster cluster = null;
-      cluster = Cluster.builder()                                                    // (1)
-        .addContactPoint("127.0.0.1")
-        .build();
-
-      try {
-        Session session = cluster.connect();
-
-        ResultSet public_result_set = session.execute(get_execution_string(entry_id, "public"));
-
-        ResultSet private_result_set = session.execute(get_execution_string(entry_id, "private"));
-
-        if (!public_result_set.isExhausted()) {
-          String delete_string = get_deletion_statement("entries_table_public", entry_id);
-          session.execute(delete_string);
-        } else if (!private_result_set.isExhausted()) {
-          String delete_string = get_deletion_statement("entries_table_private", entry_id);
-          session.execute(delete_string);
-        } else {
-          // ****** Throw exception that entry was not found
-        }
-      } finally {
-        if (cluster != null) cluster.close();
-      }
-    });
-
-    SockJSHandlerOptions options = new SockJSHandlerOptions().setHeartbeatInterval(2000);
+    router.delete("/entries/:entry_id/").handler(Handlers.DELETE_ENTRY_HANDLER);
 
     router.route("/static/*").handler(StaticHandler.create("webroot"));
 
-    //router.route("/latest/*").handler(sockJSHandler);
-
-    server.websocketHandler(websocket -> {
-      System.out.println(websocket.path());
-      if (!websocket.path().startsWith("/latest")) {
-        System.out.println("socket rejected");
-        websocket.reject();
-      } else {
-        System.out.println("connected");
-      }
-      eb.consumer("new_public_message", message -> {
-        JsonArray r = (JsonArray) message.body();
-        String sending_text = r.toString();
-
-        WebSocketFrame socketFrame = WebSocketFrame.textFrame(sending_text, true);
-        websocket.writeFrame(socketFrame);
-      });
-    });
-
+    server.websocketHandler(Handlers.WEBSOCKET_HANDLER);
 
     server.requestHandler(router::accept).listen(8000);
 

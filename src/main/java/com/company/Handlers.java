@@ -4,8 +4,8 @@ import com.datastax.driver.core.Cluster;
 import com.datastax.driver.core.ResultSet;
 import com.datastax.driver.core.Session;
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.http.*;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.company.MainVerticle.eb;
 import static com.company.Utils.*;
 
 /**
@@ -24,7 +25,7 @@ public class Handlers {
     routingContext.request().handler(data -> {
       JsonObject data_in_json = ParameterValidation.validate(data);
       System.out.println(data_in_json.toString());
-      insert_values(MainVerticle.eb, data_in_json.getString("body"), data_in_json.getString("title"),
+      insert_values(eb, data_in_json.getString("body"), data_in_json.getString("title"),
         data_in_json.getString("expires"), data_in_json.getString("private"), routingContext);
     });
   };
@@ -39,7 +40,7 @@ public class Handlers {
     request.bodyHandler(data -> {
       try {
         JsonObject data_object = ParameterValidation.validate(data);
-        insert_values(MainVerticle.eb, data_object.getString("body"), data_object.getString("title"),
+        insert_values(eb, data_object.getString("body"), data_object.getString("title"),
           data_object.getString("expires"), data_object.getString("private"), routingContext);
         System.out.println("inserted values");
       } catch (RequiredParamsMissingException e) {
@@ -137,5 +138,55 @@ public class Handlers {
     } finally {
       if (cluster != null) cluster.close();
     }
+  };
+
+  static Handler<RoutingContext> DELETE_ENTRY_HANDLER = routingContext -> {
+    String entry_id = routingContext.request().getParam("entry_id");
+
+    HttpServerResponse response = routingContext.response();
+    response.putHeader("content-type", "text/plain");
+    response.end("");
+
+    Cluster cluster = null;
+    cluster = Cluster.builder()                                                    // (1)
+      .addContactPoint("127.0.0.1")
+      .build();
+
+    try {
+      Session session = cluster.connect();
+
+      ResultSet public_result_set = session.execute(get_execution_string(entry_id, "public"));
+
+      ResultSet private_result_set = session.execute(get_execution_string(entry_id, "private"));
+
+      if (!public_result_set.isExhausted()) {
+        String delete_string = get_deletion_statement("entries_table_public", entry_id);
+        session.execute(delete_string);
+      } else if (!private_result_set.isExhausted()) {
+        String delete_string = get_deletion_statement("entries_table_private", entry_id);
+        session.execute(delete_string);
+      } else {
+        // ****** Throw exception that entry was not found
+      }
+    } finally {
+      if (cluster != null) cluster.close();
+    }
+  };
+
+  static Handler<ServerWebSocket> WEBSOCKET_HANDLER = websocket -> {
+    System.out.println(websocket.path());
+    if (!websocket.path().startsWith("/latest")) {
+      System.out.println("socket rejected");
+      websocket.reject();
+    } else {
+      System.out.println("connected");
+    }
+    eb.consumer("new_public_message", message -> {
+      JsonArray r = (JsonArray) message.body();
+      String sending_text = r.toString();
+
+      WebSocketFrame socketFrame = WebSocketFrame.textFrame(sending_text, true);
+      websocket.writeFrame(socketFrame);
+    });
   };
 }
