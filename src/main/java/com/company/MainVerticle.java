@@ -23,6 +23,8 @@ import java.io.File;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Created by SalmonKiller on 10/22/16.
@@ -62,6 +64,7 @@ public class MainVerticle extends AbstractVerticle {
           System.out.println("inserted values");
 
         } catch (RequiredParamsMissingException e) {
+          Logger.getAnonymousLogger().log(Level.INFO, "Caught a RequiredParamsMissingException");
           routingContext.response().end(missing_params_message);
         }
 
