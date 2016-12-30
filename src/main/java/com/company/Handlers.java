@@ -50,14 +50,9 @@ public class Handlers {
   };
 
   static Handler<RoutingContext> GET_ALL_ENTRIES_HANDLER = routingContext -> {
-    Cluster cluster = null;
-    cluster = Cluster.builder()                                                    // (1)
-      .addContactPoint("127.0.0.1")
-      .build();
 
-    try {
-      Session session = cluster.connect();
-      ResultSet resultSet = session.execute("select * from entry_keyspace.entries_table_public;");
+    DatabaseAccess database_access = new DatabaseAccess();
+    database_access.executeStatement("select * from entry_keyspace.entries_table_public;", resultSet -> {
       final String[] output_string = {""};
 
       resultSet.forEach(row -> {
@@ -69,9 +64,7 @@ public class Handlers {
       HttpServerResponse response = routingContext.response();
       response.putHeader("content-type", "text/plain");
       response.end(output_string[0]);
-    } finally {
-      if (cluster != null) cluster.close();
-    }
+    });
   };
 
   static Handler<RoutingContext> SPECIFIC_ENTRY_HANDLER = routingContext -> {

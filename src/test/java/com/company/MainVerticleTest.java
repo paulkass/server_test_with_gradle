@@ -157,6 +157,11 @@ public class MainVerticleTest {
     }
 
     @Test
+    public void checkPublicEntriesList() {
+
+    }
+
+    @Test
     public void missingTitleParameter(TestContext context) {
       Async async = context.async();
 
@@ -198,11 +203,12 @@ public class MainVerticleTest {
            String execution_string = "select entry_id, ttl(body) as time_to_expire, ttl(title) as time_to_title from entry_keyspace.entries_table_" + table_name + " where entry_id=" +
              entry_id + ";";
            System.out.println(execution_string);
-           generalDatabaseQuery(execution_string, resultSet -> {
+           DatabaseAccess db = new DatabaseAccess();
+           db.executeStatement(execution_string, resultSet -> {
              Row result_row = resultSet.one();
              System.out.println(result_row.toString());
-//             String result = result_row.getString("time_to_expire");
-//             System.out.println(result);
+             String result = result_row.getString("time_to_expire");
+             System.out.println(result);
 
 
            });
@@ -283,7 +289,8 @@ public class MainVerticleTest {
           .handler(httpClientResponse -> {
               httpClientResponse.bodyHandler(body -> {
                 String entry_id = body.toString();
-                generalDatabaseQuery("select * from entry_keyspace.entries_table_public where entry_id=" +
+                DatabaseAccess db = new DatabaseAccess();
+                db.executeStatement("select * from entry_keyspace.entries_table_public where entry_id=" +
                   entry_id + ";", resultSet -> {
                   context.assertFalse(resultSet.isExhausted());
                   if (call_complete) {
@@ -314,7 +321,8 @@ public class MainVerticleTest {
                         String entry_id = body.toString();
                         //System.out.println(entry_id);
                         //Boolean x = checkIfExistsInDatabase(entry_id, "public");
-                        generalDatabaseQuery("select * from entry_keyspace.entries_table_public where entry_id=" +
+                        DatabaseAccess db = new DatabaseAccess();
+                        db.executeStatement("select * from entry_keyspace.entries_table_public where entry_id=" +
                           entry_id + ";", resultSet -> {
                           context.assertFalse(resultSet.isExhausted());
                           if (call_complete) {
@@ -533,41 +541,10 @@ public class MainVerticleTest {
         if (value.equals("null")) {
           return_value = true;
         }
-
         return return_value;
-
-
       } finally {
         if (cluster!=null) {cluster.close();}
       }
-    }
-
-    public void generalDatabaseQuery(String execution_string, databaseCallback callback) {
-      Cluster cluster = null;
-      try {
-
-        cluster = Cluster.builder()                                                    // (1)
-          .addContactPoint("127.0.0.1")
-          .build();
-      } catch (Exception e) {
-        fail(e.getMessage());
-      }
-
-
-
-        Session session = cluster.connect();
-
-        ResultSet resultSet = session.execute(execution_string);
-        System.out.println("getting results");
-
-
-        callback.operation(resultSet);
-
-
-
-        if (cluster!=null) {cluster.close();}
-
-
     }
 
 }
