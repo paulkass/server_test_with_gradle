@@ -1,7 +1,5 @@
 package com.company;
 
-import com.datastax.driver.core.Cluster;
-import com.datastax.driver.core.Session;
 import com.eaio.uuid.UUID;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
@@ -16,12 +14,10 @@ public class Utils {
   public static void insert_values(EventBus eb, String body, String title, String expires, String private_string, RoutingContext routingContext) {
     UUID uuid = new UUID();
 
-    Cluster cluster = null;
-    cluster = Cluster.builder()                                                    // (1)
-      .addContactPoint("127.0.0.1")
-      .build();
+    System.out.println("Arrived at insertion of values");
+
+    DatabaseAccess database_access = new DatabaseAccess();
     try {
-      Session session = cluster.connect(); // (2)
 
       String table_name = "entries_table_public";
       if (private_string.equals("true")) {
@@ -34,18 +30,18 @@ public class Utils {
       } else {
         executionString = get_insertion_statement(uuid.toString(), table_name, body, title, get_expiration_secs(expires));
       }
-      session.execute(executionString);
-      if (private_string.equals("false")) {
-        JsonArray array = new JsonArray();
-        array.add(body);
-        array.add(title);
-        array.add(expires);
-        eb.publish("new_public_message", array);
-      }
+      database_access.executeStatement(executionString, resultSet -> {
+        if (private_string.equals("false")) {
+          JsonArray array = new JsonArray();
+          array.add(body);
+          array.add(title);
+          array.add(expires);
+          eb.publish("new_public_message", array);
+        }
+      });
+
     } catch (Exception e) {
       System.out.println(e.toString());
-    } finally {
-      if (cluster != null) cluster.close();                                          // (5)
     }
     routingContext.response().end(uuid.toString());
   }

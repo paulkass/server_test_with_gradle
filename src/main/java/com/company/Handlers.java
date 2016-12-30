@@ -42,7 +42,6 @@ public class Handlers {
         JsonObject data_object = ParameterValidation.validate(data);
         insert_values(eb, data_object.getString("body"), data_object.getString("title"),
           data_object.getString("expires"), data_object.getString("private"), routingContext);
-        System.out.println("inserted values");
       } catch (RequiredParamsMissingException e) {
         Logger.getAnonymousLogger().log(Level.INFO, "Caught a RequiredParamsMissingException");
         routingContext.response().end(MainVerticle.missing_params_message);
