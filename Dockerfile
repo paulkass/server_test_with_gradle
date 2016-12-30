@@ -1,6 +1,7 @@
 FROM ubuntu
 RUN apt-get update
-ENV SLEEP_TIME 15
+ENV SLEEP_TIME 20
+ARG BRANCH
 RUN echo "deb http://www.apache.org/dist/cassandra/debian 39x main" | tee -a /etc/apt/sources.list.d/cassandra.sources.list
 RUN apt-get install -y curl
 RUN curl https://www.apache.org/dist/cassandra/KEYS | apt-key add -
@@ -9,7 +10,8 @@ RUN apt-get install -y gradle
 RUN apt-get install -y git
 RUN apt-get install -y openjdk-8-jdk
 RUN apt-get install -y cassandra
-RUN git clone -b master https://github.com/paulkass/server_test_with_gradle.git
+# The BRANCH build argument variable must be passed in the command line
+RUN git clone -b $BRANCH https://github.com/paulkass/server_test_with_gradle.git
 
 WORKDIR server_test_with_gradle
 #RUN git fetch
