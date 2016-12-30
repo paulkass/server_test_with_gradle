@@ -195,22 +195,16 @@ public class MainVerticleTest {
          insertion_string = "body=" + URLEncoder.encode(body_test, "UTF-8");
          insertion_string += "&private=" + URLEncoder.encode(private_test, "UTF-8");
          missingTimeParam(context, insertion_string, entry_id -> {
-           System.out.println(entry_id);
            String table_name = "";
            if (private_test.equals("true")) {
              table_name = "private";
            } else { table_name = "public";}
-           String execution_string = "select entry_id, ttl(body) as time_to_expire, ttl(title) as time_to_title from entry_keyspace.entries_table_" + table_name + " where entry_id=" +
+           String execution_string = "select entry_id, ttl(body) as time_to_expire from entry_keyspace.entries_table_" + table_name + " where entry_id=" +
              entry_id + ";";
-           System.out.println(execution_string);
            DatabaseAccess db = new DatabaseAccess();
            db.executeStatement(execution_string, resultSet -> {
              Row result_row = resultSet.one();
-             System.out.println(result_row.toString());
-             String result = result_row.getString("time_to_expire");
-             System.out.println(result);
-
-
+             context.assertEquals(result_row.getInt("time_to_expire"), 0);
            });
            async.complete();
          });
@@ -218,6 +212,7 @@ public class MainVerticleTest {
          System.out.println(e.getStackTrace());
        }
      }
+
 
     @Test
     public void missingBodyParameter(TestContext context) {
